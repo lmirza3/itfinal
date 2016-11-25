@@ -4,6 +4,7 @@
     <title>My fancy game</title>
 </head>
 <body>
+<h5>Score: <span id="score"></span></h5>
 <canvas id="canvas" style="border:1px solid #000"></canvas>
 <script>
 (function() {
@@ -13,32 +14,67 @@
 
 var canvas = document.getElementById("canvas"),
     ctx = canvas.getContext("2d"),
-    width = 500,
-    height = 200,
+    width = 250,
+    height = 350,
     player = {
-      x : width/2,
-      y : height - 5,
+      x : width*0.3,
+      y : 50,  //fix
       width : 5,
       height : 5,
-      speed: 3,
+      speed: 5,
       velX: 0,
       velY: 0,
-      jumping: false
+      jumping: false,
+      passed: false
     },
     keys = [],
-    friction = 0.8,
-    gravity = 0.3;
- 
-canvas.width = width;
+    friction = 0.9,
+    gravity = 0.5,
+    
+    objectgap = 0.4, //30%
+    //random object length
+    ol = Math.floor(Math.random() * (8)),
+    object_length = [{t:.3, b:1.7}, 
+                     {t:.7, b:1.3}, 
+                     {t:1.7, b:.3},
+                     {t:1.3, b:.7},
+                     {t:1.5, b:.5},
+                     {t:.5, b:1.5},
+                     {t:.6, b:1.4},
+                     {t:1.4, b:.6}
+                    ],
+    object_top = {
+        x: width*0.8,
+        y: 0,
+        width: 10,
+        height: height*objectgap*object_length[ol].t,
+        speed: 2
+    },
+    object_bottom = {
+        x: width*0.8,
+        y: 350,
+        width: 10,
+        height: -height*objectgap*object_length[ol].b,
+        speed: 2
+    },
+    // number of object passed succesfully
+    passed_objects = 0; 
+
+  
+canvas.width = width;  
 canvas.height = height;
  
 function update(){
   
+  //init
+    object_top.height = height*objectgap*object_length[ol].t;
+    object_bottom.height =  -height*objectgap*object_length[ol].b;
+    
   // check keys
    if (keys[38] || keys[32]) {
      // up arrow or space
      if(!player.jumping){
-       player.jumping = true;
+       player.jumping = false;
        player.velY = -player.speed*2;
      }
    }
@@ -54,28 +90,112 @@ function update(){
            player.velX--;
        }
    }
+    
    player.velX *= friction;
    player.velY += gravity;
    player.x += player.velX;
    player.y += player.velY;
+   object_top.x -= object_top.speed;
+   object_bottom.x -= object_top.speed;
    
    if (player.x >= width-player.width) {
     player.x = width-player.width;
     } else if (player.x <= 0) {
         player.x = 0;
    }
+    
+    if (object_bottom.x >= width-object_bottom.width) {
+        object_bottom.x = width-object_bottom.width;
+        } else if (object_bottom.x <= 0) {
+            object_bottom.x = width;
+    }
+    if (object_top.x >= width-object_top.width) {
+        object_top.x = width-object_top.width;
+        } else if (object_top.x <= 0) {
+            object_top.x = width;
+            
+            //reseting
+            ol = Math.floor(Math.random() * (4));
+            player.passed = false;            
+    }
+    
+    
+    if (  player.x < object_top.x + object_top.width &&
+		  player.x + player.width > object_top.x &&
+		  player.y < object_top.y + object_top.height &&
+		  player.height + player.y > object_top.y) 
+		  {
+			//prompt("Game Over! Enter your name to save your score.");
+			alert("Game Over!");
+			console.log("YIKES");
+			
+			// reset
+			resetGame();
+    }
+    if (  player.x < object_bottom.x + object_bottom.width &&
+		  player.x + player.width > object_bottom.x &&
+		  player.y > object_bottom.y + object_bottom.height &&
+		  player.height + player.y < object_bottom.y) 
+		  {
+			//prompt("Game Over! Enter your name to save your score.");
+			alert("Game Over!");
+			console.log("YIKES");
+			
+			// reset
+			resetGame();
+    }
+        
+    // if player pass the object, give him a cookie.. I mean a point!
+    if (object_top.x < player.x && player.passed == false){
+        passed_objects++; // add a point if passed thro
+        player.passed = true;
+    }
+    
    
-   if(player.y >= height-player.height){
+   if(player.y >= height - player.height){
+    //console.log("seconds");
     player.y = height - player.height;
     player.jumping = false;
    }
+    
+
+    if(player.y < 0){
+    console.log("wait.. come back");
+    player.y = 0;
+    //player.jumping = false;
+   }
+    
     // draw our player
     ctx.clearRect(0,0,width,height);
     ctx.fillStyle = "red";
     ctx.fillRect(player.x, player.y, player.width, player.height);
+    
+    ctx.fillRect(object_top.x, object_top.y, object_top.width, object_top.height);
+    ctx.fillRect(object_bottom.x, object_bottom.y, object_bottom.width, object_bottom.height);
+    
     // run through the loop again
+    document.getElementById("score").innerText = passed_objects;
     requestAnimationFrame(update);
 }
+    
+function resetGame(){
+      player.x = width*0.3;
+      player.y = - 5;  //fix
+      player.velX= 0;
+      player.velY= 0;
+      jumping= false;
+      passed= false;
+      
+      passed_objects = 0;
+      
+      object_bottom.x = width*0.8;
+      object_top.x = width*0.8;
+      ol = Math.floor(Math.random() * (8));
+    keys = [];
+   
+    };
+    
+    
 document.body.addEventListener("keydown", function(e) {
     keys[e.keyCode] = true;
 });
