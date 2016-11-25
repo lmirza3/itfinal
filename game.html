@@ -31,7 +31,7 @@ var canvas = document.getElementById("canvas"),
     friction = 0.9,
     gravity = 0.5,
     
-    objectgap = 0.4, //30%
+    objectgap = 0.4, //40% gap between top and bottom objects.. we can make the gap smaller to make it harder
     //random object length
     ol = Math.floor(Math.random() * (8)),
     object_length = [{t:.3, b:1.7}, 
@@ -104,6 +104,7 @@ function update(){
         player.x = 0;
    }
     
+    // make the top & bottom objects come back after they reach the end
     if (object_bottom.x >= width-object_bottom.width) {
         object_bottom.x = width-object_bottom.width;
         } else if (object_bottom.x <= 0) {
@@ -119,7 +120,7 @@ function update(){
             player.passed = false;            
     }
     
-    
+    // reset the game if the player hits top & bottom objects
     if (  player.x < object_top.x + object_top.width &&
 		  player.x + player.width > object_top.x &&
 		  player.y < object_top.y + object_top.height &&
@@ -145,7 +146,7 @@ function update(){
 			resetGame();
     }
         
-    // if player pass the object, give him/her a cookie.. I mean a point!
+    // if player passes the objects, give him/her a cookie.. I mean a point!
     if (object_top.x < player.x && player.passed == false){
         passed_objects++; // add a point if passed thru
         player.passed = true;
@@ -159,9 +160,10 @@ function update(){
    }
     
 
+    // make sure the player doesn't go above the screen
     if(player.y < 0){
     console.log("wait.. come back");
-    player.y = 0;
+    player.y = 0; 
     //player.jumping = false;
    }
     
@@ -173,14 +175,15 @@ function update(){
     ctx.fillRect(object_top.x, object_top.y, object_top.width, object_top.height);
     ctx.fillRect(object_bottom.x, object_bottom.y, object_bottom.width, object_bottom.height);
     
-    // run through the loop again
+    // record the score, we might add this to the database..
     document.getElementById("score").innerText = passed_objects;
+    // run through the loop again
     requestAnimationFrame(update);
 }
     
 function resetGame(){
       player.x = width*0.3;
-      player.y = - 5;  //fix
+      player.y = -5;  //fix
       player.velX= 0;
       player.velY= 0;
       jumping= false;
@@ -191,8 +194,7 @@ function resetGame(){
       object_bottom.x = width*0.8;
       object_top.x = width*0.8;
       ol = Math.floor(Math.random() * (8));
-    keys = [];
-   
+      keys = [];
     };
     
     
