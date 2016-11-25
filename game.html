@@ -115,7 +115,7 @@ function update(){
             object_top.x = width;
             
             //reseting
-            ol = Math.floor(Math.random() * (4));
+            //ol = Math.floor(Math.random() * (8));
             player.passed = false;            
     }
     
@@ -145,9 +145,9 @@ function update(){
 			resetGame();
     }
         
-    // if player pass the object, give him a cookie.. I mean a point!
+    // if player pass the object, give him/her a cookie.. I mean a point!
     if (object_top.x < player.x && player.passed == false){
-        passed_objects++; // add a point if passed thro
+        passed_objects++; // add a point if passed thru
         player.passed = true;
     }
     
